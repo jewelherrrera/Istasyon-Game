@@ -1,5 +1,6 @@
 using UnityEngine;
 using Istasyon.UI;
+using Istasyon.Player;
 
 namespace Istasyon.Interaction
 {
@@ -8,6 +9,9 @@ namespace Istasyon.Interaction
         [Header("Key Settings")]
         [SerializeField] private string keyID = "Door001_Key";
         [SerializeField] private string prompt = "Press E to Pick Up Key";
+
+        [Header("Item Data")]
+        [SerializeField] private ItemData keyItemData;
 
         [Header("Highlight Settings")]
         [SerializeField] private Renderer keyRenderer;
@@ -19,9 +23,9 @@ namespace Istasyon.Interaction
         [SerializeField] private string actionName = "Grab";
         [SerializeField] private InteractPromptUI promptUI;
 
-        [Header("Audio")]                                              // ← NEW
-        [SerializeField] private AudioSource audioSource;             // ← NEW
-        [SerializeField] private AudioClip pickupSound;               // ← NEW
+        [Header("Audio")]
+        [SerializeField] private AudioSource audioSource;
+        [SerializeField] private AudioClip pickupSound;
 
         [Header("Optional Effects")]
         [SerializeField] private float bobSpeed = 1.5f;
@@ -45,7 +49,7 @@ namespace Istasyon.Interaction
 
         private void Update()
         {
-            transform.position = startPos + Vector3.up 
+            transform.position = startPos + Vector3.up
                 * Mathf.Sin(Time.time * bobSpeed) * bobHeight;
         }
 
@@ -73,17 +77,19 @@ namespace Istasyon.Interaction
 
             if (promptUI != null) promptUI.OnPressed();
 
-            Inventory inventory = player.GetComponent<Inventory>();
+            InventorySystem inventory = player.GetComponent<InventorySystem>();
 
             if (inventory != null)
             {
-                inventory.AddKey(keyID);
+                inventory.AddItem(keyItemData);
 
-                if (audioSource != null && pickupSound != null)        // ← NEW
-                    audioSource.PlayOneShot(pickupSound);              // ← NEW
+                if (promptUI != null) promptUI.Hide(); // ← ADDED
 
-                Destroy(gameObject, pickupSound != null                // ← NEW
-                    ? pickupSound.length : 0f);                        // ← NEW
+                if (audioSource != null && pickupSound != null)
+                    audioSource.PlayOneShot(pickupSound);
+
+                Destroy(gameObject, pickupSound != null
+                    ? pickupSound.length : 0f);
             }
             else
             {

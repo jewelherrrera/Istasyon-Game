@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using Istasyon.UI;
+using Istasyon.Player;                                                 // ← NEW
 
 namespace Istasyon.Interaction
 {
@@ -131,9 +132,10 @@ namespace Istasyon.Interaction
 
             if (isLocked)
             {
-                Inventory inventory = player.GetComponent<Inventory>();
-                if (inventory != null && inventory.HasKey(requiredKeyID))
+                InventorySystem inventory = player.GetComponent<InventorySystem>(); // ← CHANGED
+                if (inventory != null && inventory.HasItem(requiredKeyID))          // ← CHANGED
                 {
+                    inventory.UseItem(requiredKeyID);                               // ← NEW
                     isLocked = false;
                     OpenDoor();
                     UpdatePrompt();
@@ -212,9 +214,8 @@ namespace Istasyon.Interaction
             {
                 if (player != null)
                 {
-                    if (!isLocked)                                // ← CHANGED
-                        UpdatePrompt();                           // ← CHANGED
-                    // locked → nothing shows until E pressed    // ← CHANGED
+                    if (!isLocked)
+                        UpdatePrompt();
                 }
                 else
                 {

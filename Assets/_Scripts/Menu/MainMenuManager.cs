@@ -32,7 +32,7 @@ namespace Istasyon.Manager
         public void OnPlayButton()
         {
             PlayClick();
-            SceneManager.LoadScene("SampleScene");
+            SceneManager.LoadScene("Tutorial");
         }
 
         public void OnSettingsButton()
