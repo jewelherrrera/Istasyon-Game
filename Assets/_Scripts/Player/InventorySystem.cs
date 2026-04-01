@@ -174,5 +174,21 @@ namespace Istasyon.Player
             for (int i = 0; i < slotBackgrounds.Length; i++)
                 slotBackgrounds[i].color = (i == _selectedSlot) ? selectedSlotColor : normalSlotColor;
         }
+
+        // --- NEW: Lets other scripts check exactly what is in the active hand! ---
+        public bool IsHoldingItem(string itemID)
+        {
+            // If the player isn't holding anything at all, return false
+            if (_selectedSlot == -1) return false; 
+
+            // Check if the item in the currently active slot matches the required ID
+            if (_slots[_selectedSlot] != null && _slots[_selectedSlot].itemID == itemID)
+            {
+                return true;
+            }
+            
+            return false;
+        }
+
     }
 }

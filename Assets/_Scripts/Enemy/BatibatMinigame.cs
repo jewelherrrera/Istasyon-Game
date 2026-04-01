@@ -10,12 +10,17 @@ namespace Istasyon.Enemy
     {
         public static BatibatMinigame Instance;
 
+        [Header("Player")]
+        [SerializeField] private Istasyon.PlayerControl.PlayerController playerController;
+
         [Header("Minigame Settings")]
         [SerializeField] private float lineSpeed = 200f;
         [SerializeField] private float barWidth = 500f;
         [SerializeField] private float greenZoneWidth = 100f;
         [SerializeField] private int maxMistakes = 3;
         [SerializeField] private float progressPerHit = 0.15f;
+        [SerializeField] private float timeLimit = 20f;              
+        [SerializeField] private float lineSpeedIncrease = 30f;     
 
         [Header("UI References")]
         [SerializeField] private GameObject batibatUI;
@@ -24,6 +29,7 @@ namespace Istasyon.Enemy
         [SerializeField] private RectTransform progressBar;
         [SerializeField] private Image[] hearts;
         [SerializeField] private TextMeshProUGUI instructionText;
+        [SerializeField] private TextMeshProUGUI timerText;          
 
         [Header("Audio")]
         [SerializeField] private AudioSource audioSource;
@@ -38,6 +44,8 @@ namespace Istasyon.Enemy
         private float _progress = 0f;
         private int _mistakes = 0;
         private float _greenZonePos = 0f;
+        private float _currentLineSpeed;                             
+        private float _timer = 0f;                                   
 
         private void Awake()
         {
@@ -55,6 +63,17 @@ namespace Istasyon.Enemy
         {
             if (!_isActive) return;
 
+            // Timer countdown                                        
+            _timer -= Time.unscaledDeltaTime;                        
+            if (timerText != null)                                   
+                timerText.text = Mathf.CeilToInt(_timer).ToString(); 
+
+            if (_timer <= 0f)                                        
+            {                                                        
+                OnDeath();                                           
+                return;                                              
+            }                                                        
+
             MoveLine();
 
             if (Input.GetKeyDown(KeyCode.E))
@@ -68,15 +87,27 @@ namespace Istasyon.Enemy
             _mistakes = 0;
             _linePos = -barWidth / 2f;
             _lineMovingRight = true;
+            _currentLineSpeed = lineSpeed;                           
+            _timer = timeLimit;                                      
 
             RandomizeGreenZone();
             UpdateHearts();
             UpdateProgressBar();
 
             batibatUI.SetActive(true);
-
-            // Freeze player movement
             Time.timeScale = 0.5f;
+
+            // --- LOCK THE PLAYER PHYSICS ---
+            if (playerController != null)
+            {
+                playerController.enabled = false;
+                Rigidbody rb = playerController.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.linearVelocity = Vector3.zero; // Kill sliding momentum
+                    rb.isKinematic = true;      // Make player an immovable brick!
+                }
+            }
 
             if (instructionText != null)
                 instructionText.text = "Press E to escape!";
@@ -84,7 +115,7 @@ namespace Istasyon.Enemy
 
         private void MoveLine()
         {
-            float move = lineSpeed * Time.unscaledDeltaTime;
+            float move = _currentLineSpeed * Time.unscaledDeltaTime; 
 
             if (_lineMovingRight)
             {
@@ -120,9 +151,12 @@ namespace Istasyon.Enemy
 
             if (isInZone)
             {
-                // Good press
                 _progress += progressPerHit;
                 _progress = Mathf.Clamp01(_progress);
+
+                _currentLineSpeed += lineSpeedIncrease;              
+
+                RandomizeGreenZone();                                 
 
                 if (audioSource != null && goodPressSound != null)
                     audioSource.PlayOneShot(goodPressSound);
@@ -134,14 +168,12 @@ namespace Istasyon.Enemy
             }
             else
             {
-                // Bad press
                 _mistakes++;
                 UpdateHearts();
 
                 if (audioSource != null && badPressSound != null)
                     audioSource.PlayOneShot(badPressSound);
 
-                // Shake instruction text
                 if (instructionText != null)
                     instructionText.text = $"WRONG! {maxMistakes - _mistakes} chances left!";
 
@@ -156,22 +188,49 @@ namespace Istasyon.Enemy
             batibatUI.SetActive(false);
             Time.timeScale = 1f;
 
+            // --- UNLOCK THE PLAYER PHYSICS ---
+            if (playerController != null)
+            {
+                playerController.enabled = true;
+                Rigidbody rb = playerController.GetComponent<Rigidbody>();
+                if (rb != null) rb.isKinematic = false; // Player can move again
+            }
+
             if (audioSource != null && escapeSound != null)
                 audioSource.PlayOneShot(escapeSound);
 
-            Debug.Log("[Batibat] Player escaped!");
+            BatibatEnemy batibat = FindFirstObjectByType<BatibatEnemy>();
+            if (batibat != null)
+            {
+                batibat.RestoreCamera();
+                batibat.ResetBatibat();
+            }
         }
 
         private void OnDeath()
         {
+            if (!_isActive) return;                                   
             _isActive = false;
             batibatUI.SetActive(false);
             Time.timeScale = 1f;
 
+            // --- UNLOCK THE PLAYER PHYSICS ---
+            if (playerController != null)
+            {
+                playerController.enabled = true;
+                Rigidbody rb = playerController.GetComponent<Rigidbody>();
+                if (rb != null) rb.isKinematic = false; 
+            }
+
             if (audioSource != null && deathSound != null)
                 audioSource.PlayOneShot(deathSound);
 
-            Debug.Log("[Batibat] Player died!");
+            BatibatEnemy batibat = FindFirstObjectByType<BatibatEnemy>();
+            if (batibat != null)
+            {
+                batibat.RestoreCamera();
+                batibat.ResetBatibat();
+            }
 
             if (RespawnManager.Instance != null)
                 RespawnManager.Instance.Respawn();
@@ -193,8 +252,7 @@ namespace Istasyon.Enemy
             {
                 if (hearts[i] != null)
                     hearts[i].color = (i < maxMistakes - _mistakes)
-                        ? Color.red
-                        : Color.grey;
+                        ? Color.red : Color.grey;
             }
         }
 

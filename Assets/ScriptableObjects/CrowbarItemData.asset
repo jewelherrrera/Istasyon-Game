@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 678a1eecc5d63b441af4a3aaaa756dd6, type: 3}
+  m_Name: CrowbarItemData
+  m_EditorClassIdentifier: Assembly-CSharp::Istasyon.Player.ItemData
+  itemID: Crowbar
+  itemName: Crowbar
+  icon: {fileID: 0}
+  holdPrefab: {fileID: 2357436903305049496, guid: 6adb95cd717da66468d2f86128ac1ea6, type: 3}

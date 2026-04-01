@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using Istasyon.UI;
-using Istasyon.Player;                                                 // ← NEW
+using Istasyon.Player;
 
 namespace Istasyon.Interaction
 {
@@ -132,10 +132,12 @@ namespace Istasyon.Interaction
 
             if (isLocked)
             {
-                InventorySystem inventory = player.GetComponent<InventorySystem>(); // ← CHANGED
-                if (inventory != null && inventory.HasItem(requiredKeyID))          // ← CHANGED
+                InventorySystem inventory = player.GetComponent<InventorySystem>();
+                
+                // --- THE UPDATED STRICT CHECK ---
+                if (inventory != null && inventory.IsHoldingItem(requiredKeyID))  
                 {
-                    inventory.UseItem(requiredKeyID);                               // ← NEW
+                    inventory.UseItem(requiredKeyID);                               
                     isLocked = false;
                     OpenDoor();
                     UpdatePrompt();
@@ -202,8 +204,7 @@ namespace Istasyon.Interaction
 
         public string GetPrompt()
         {
-            if (isLocked) return lockedPrompt;
-            return isOpen ? closePrompt : interactionPrompt;
+            return ""; // Hides global screen UI as requested earlier!
         }
         
         public void SetPlayer(Transform playerTransform)

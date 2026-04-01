@@ -1,0 +1,11 @@
+Model Information:
+* title:	Rusty Chains
+* source:	https://sketchfab.com/3d-models/rusty-chains-be9648f8e0324bbd967c10b44007bee1
+* author:	amanda_98 (https://sketchfab.com/amanda_98)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Rusty Chains" (https://sketchfab.com/3d-models/rusty-chains-be9648f8e0324bbd967c10b44007bee1) by amanda_98 (https://sketchfab.com/amanda_98) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
