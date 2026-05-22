@@ -10,6 +10,10 @@ namespace Istasyon.Interaction
         [SerializeField] private string keyID = "Door001_Key";
         [SerializeField] private string prompt = "Press E to Pick Up Key";
 
+        [Header("Task Settings")]
+        [Tooltip("What should the next objective be after picking this up?")]
+        [SerializeField] private string nextTaskText = ""; // <--- NEW!
+
         [Header("Item Data")]
         [SerializeField] private ItemData keyItemData;
 
@@ -83,13 +87,19 @@ namespace Istasyon.Interaction
             {
                 inventory.AddItem(keyItemData);
 
-                if (promptUI != null) promptUI.Hide(); // ← ADDED
+                if (promptUI != null) promptUI.Hide(); 
+
+                // ---> UPDATED TRIGGER <---
+                // It only triggers if you actually typed something in the Inspector!
+                if (TaskManager.instance != null && !string.IsNullOrEmpty(nextTaskText))
+                {
+                    TaskManager.instance.CompleteTask(nextTaskText);
+                }
 
                 if (audioSource != null && pickupSound != null)
                     audioSource.PlayOneShot(pickupSound);
 
-                Destroy(gameObject, pickupSound != null
-                    ? pickupSound.length : 0f);
+                Destroy(gameObject, pickupSound != null ? pickupSound.length : 0f);
             }
             else
             {
