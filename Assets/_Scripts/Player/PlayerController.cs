@@ -83,6 +83,9 @@ namespace Istasyon.PlayerControl
 
             _currentStamina = maxStamina;
             if (staminaBarUI != null) staminaBarUI.SetActive(false);
+
+            // ADDED: Loads the saved mouse sensitivity from the Main Menu!
+            MouseSensitivity = PlayerPrefs.GetFloat("MouseSensitivity", 2f);
         }
 
         private void FixedUpdate()
