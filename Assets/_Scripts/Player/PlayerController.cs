@@ -25,6 +25,8 @@ namespace Istasyon.PlayerControl
         [SerializeField] private float StandingHeight = 1.78f;
         [SerializeField] private float CrouchHeight = 0.9f;
         [SerializeField] private float CrouchTransitionSpeed = 10f;
+        [SerializeField] private float CameraStandHeight = 1.67f; 
+        [SerializeField] private float CameraCrouchHeight = 0.9f;
 
         [Header("Stamina Settings")]
         [SerializeField] private float maxStamina = 100f;
@@ -100,7 +102,7 @@ namespace Istasyon.PlayerControl
         {
             if (!_hasAnimator) return;
             
-            bool canRun = _currentStamina > 0;                            // ← CHANGED
+            bool canRun = _currentStamina > 0;
             float targetSpeed = (_inputManager.Run && canRun) ? _runSpeed : _walkSpeed;
             if (_inputManager.Crouch) targetSpeed = 1.5f;
             if (_inputManager.Move == Vector2.zero) targetSpeed = 0f;
@@ -122,13 +124,13 @@ namespace Istasyon.PlayerControl
         {
             bool isRunning = _inputManager.Run &&
                              _inputManager.Move != Vector2.zero &&
-                             _currentStamina > 0;                         // ← CHANGED
+                             _currentStamina > 0;
 
             if (isRunning)
             {
                 _isRegening = false;
                 _regenTimer = 0f;
-                _isExhausted = false;                                     // ← NEW
+                _isExhausted = false;
                 _currentStamina -= staminaDrainRate * Time.deltaTime;
                 _currentStamina = Mathf.Clamp(_currentStamina, 0, maxStamina);
 
@@ -208,9 +210,20 @@ namespace Istasyon.PlayerControl
         private void HandleCrouch()
         {
             _animator.SetBool(_crouchHash, _inputManager.Crouch);
+            
+            // 1. Shrink the Player Collider
             float targetHeight = _inputManager.Crouch ? CrouchHeight : StandingHeight;
             _capsuleCollider.height = Mathf.Lerp(_capsuleCollider.height, targetHeight, CrouchTransitionSpeed * Time.fixedDeltaTime);
             _capsuleCollider.center = new Vector3(0, _capsuleCollider.height / 2, 0);
+
+            // 2. Smoothly lower the CameraRoot
+            if (CameraRoot != null)
+            {
+                float targetCamHeight = _inputManager.Crouch ? CameraCrouchHeight : CameraStandHeight;
+                Vector3 newCamPos = CameraRoot.localPosition;
+                newCamPos.y = Mathf.Lerp(CameraRoot.localPosition.y, targetCamHeight, CrouchTransitionSpeed * Time.fixedDeltaTime);
+                CameraRoot.localPosition = newCamPos;
+            }
         }
     }
 }
