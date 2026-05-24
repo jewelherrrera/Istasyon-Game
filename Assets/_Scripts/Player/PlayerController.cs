@@ -25,8 +25,12 @@ namespace Istasyon.PlayerControl
         [SerializeField] private float StandingHeight = 1.78f;
         [SerializeField] private float CrouchHeight = 0.9f;
         [SerializeField] private float CrouchTransitionSpeed = 10f;
+        
+        // --- THE NEW CAMERA POSITION VARIABLES ---
         [SerializeField] private float CameraStandHeight = 1.67f; 
         [SerializeField] private float CameraCrouchHeight = 0.9f;
+        [SerializeField] private float CameraStandZ = 0.35f; 
+        [SerializeField] private float CameraCrouchZ = 0.65f; 
 
         [Header("Stamina Settings")]
         [SerializeField] private float maxStamina = 100f;
@@ -84,7 +88,6 @@ namespace Istasyon.PlayerControl
             _currentStamina = maxStamina;
             if (staminaBarUI != null) staminaBarUI.SetActive(false);
 
-            // ADDED: Loads the saved mouse sensitivity from the Main Menu!
             MouseSensitivity = PlayerPrefs.GetFloat("MouseSensitivity", 2f);
         }
 
@@ -219,12 +222,18 @@ namespace Istasyon.PlayerControl
             _capsuleCollider.height = Mathf.Lerp(_capsuleCollider.height, targetHeight, CrouchTransitionSpeed * Time.fixedDeltaTime);
             _capsuleCollider.center = new Vector3(0, _capsuleCollider.height / 2, 0);
 
-            // 2. Smoothly lower the CameraRoot
+            // --- 2. UPDATED: Smoothly lower AND push the CameraRoot forward! ---
             if (CameraRoot != null)
             {
                 float targetCamHeight = _inputManager.Crouch ? CameraCrouchHeight : CameraStandHeight;
+                float targetCamZ = _inputManager.Crouch ? CameraCrouchZ : CameraStandZ; // Grabs the target Z
+
                 Vector3 newCamPos = CameraRoot.localPosition;
+                
+                // Lerps both the Height (Y) and the Forward Push (Z) at the exact same time
                 newCamPos.y = Mathf.Lerp(CameraRoot.localPosition.y, targetCamHeight, CrouchTransitionSpeed * Time.fixedDeltaTime);
+                newCamPos.z = Mathf.Lerp(CameraRoot.localPosition.z, targetCamZ, CrouchTransitionSpeed * Time.fixedDeltaTime);
+                
                 CameraRoot.localPosition = newCamPos;
             }
         }
