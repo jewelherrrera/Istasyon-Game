@@ -18,6 +18,9 @@ public class PlayerBlink : MonoBehaviour
     public CanvasGroup objectiveGroup;
     public CanvasGroup taskGroup;
     public float objectiveShowTime = 4f; // How long the Objective stays on screen
+    
+    // --- NEW: The Speaker Slot ---
+    public AudioSource objectiveAudio;
 
     void Start()
     {
@@ -59,6 +62,12 @@ public class PlayerBlink : MonoBehaviour
 
         // --- NEW: OBJECTIVE & TASK SEQUENCE ---
         
+        // Trigger the "Ding" sound effect!
+        if (objectiveAudio != null)
+        {
+            objectiveAudio.Play();
+        }
+
         // Fade BOTH in at the exact same time
         StartCoroutine(FadeCanvasGroup(taskGroup, 0f, 1f, blinkSpeed));
         yield return StartCoroutine(FadeCanvasGroup(objectiveGroup, 0f, 1f, blinkSpeed));
