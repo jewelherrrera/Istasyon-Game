@@ -237,5 +237,11 @@ namespace Istasyon.PlayerControl
                 CameraRoot.localPosition = newCamPos;
             }
         }
+
+        // --- ADDED THIS FUNCTION RIGHT HERE FOR THE UI SLIDER ---
+        public void UpdateSensitivity(float newValue)
+        {
+            MouseSensitivity = newValue;
+        }
     }
 }
