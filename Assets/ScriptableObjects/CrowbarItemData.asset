@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Istasyon.Player.ItemData
   itemID: Crowbar
   itemName: Crowbar
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 778eacef8037c1d429270d6d42f7c01f, type: 3}
   holdPrefab: {fileID: 2357436903305049496, guid: 6adb95cd717da66468d2f86128ac1ea6, type: 3}
