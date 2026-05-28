@@ -32,6 +32,11 @@ namespace Istasyon.PlayerControl
         [SerializeField] private float CameraStandZ = 0.35f; 
         [SerializeField] private float CameraCrouchZ = 0.65f; 
 
+        // --- NEW: STAIR CLIMBING SETTINGS ---
+        [Header("Step Climb Settings")]
+        [SerializeField] private float stepHeight = 0.3f; // Max height of a stair they can walk over
+        [SerializeField] private float stepSmooth = 0.15f; // How smoothly they snap up the stairs
+
         [Header("Stamina Settings")]
         [SerializeField] private float maxStamina = 100f;
         [SerializeField] private float staminaDrainRate = 20f;
@@ -95,6 +100,7 @@ namespace Istasyon.PlayerControl
         {
             Move();
             HandleCrouch();
+            HandleStepClimb(); // <-- Calls the new stair mechanic!
         }
 
         private void Update()
@@ -222,7 +228,7 @@ namespace Istasyon.PlayerControl
             _capsuleCollider.height = Mathf.Lerp(_capsuleCollider.height, targetHeight, CrouchTransitionSpeed * Time.fixedDeltaTime);
             _capsuleCollider.center = new Vector3(0, _capsuleCollider.height / 2, 0);
 
-            // --- 2. UPDATED: Smoothly lower AND push the CameraRoot forward! ---
+            // 2. Smoothly lower AND push the CameraRoot forward
             if (CameraRoot != null)
             {
                 float targetCamHeight = _inputManager.Crouch ? CameraCrouchHeight : CameraStandHeight;
@@ -238,10 +244,30 @@ namespace Istasyon.PlayerControl
             }
         }
 
-        // --- ADDED THIS FUNCTION RIGHT HERE FOR THE UI SLIDER ---
-        public void UpdateSensitivity(float newValue)
+        // --- THE NEW STAIR CLIMBING LOGIC ---
+        private void HandleStepClimb()
         {
-            MouseSensitivity = newValue;
+            // Only try to climb stairs if we are actually pressing W/A/S/D
+            if (_inputManager.Move == Vector2.zero) return;
+
+            // Get the exact direction the player is trying to walk
+            Vector3 moveDir = new Vector3(_currentVelocity.x, 0, _currentVelocity.y).normalized;
+            Vector3 worldMoveDir = transform.TransformDirection(moveDir);
+
+            // Set the start positions for the lasers (just slightly above the absolute floor so it doesn't scrape the ground)
+            Vector3 toePosition = transform.position + new Vector3(0, 0.05f, 0);
+            Vector3 kneePosition = transform.position + new Vector3(0, stepHeight, 0);
+
+            // Ray 1: Does our toe hit a wall?
+            if (Physics.Raycast(toePosition, worldMoveDir, out RaycastHit hitLower, 0.4f))
+            {
+                // Ray 2: Does our knee pass OVER the wall?
+                if (!Physics.Raycast(kneePosition, worldMoveDir, 0.5f))
+                {
+                    // It's a step! Lift the Rigidbody up smoothly.
+                    _playerRigidbody.position += new Vector3(0, stepSmooth, 0);
+                }
+            }
         }
     }
 }
