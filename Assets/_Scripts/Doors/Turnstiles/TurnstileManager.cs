@@ -15,10 +15,11 @@ public class TurnstileManager : MonoBehaviour
 
     public void RandomizeGates()
     {
-        // 1. First, lock EVERY single gate in the list (turns them all to Red X)
+        // 1. First, lock EVERY single gate and remove the winning ticket
         foreach (TurnstileGate gate in allTurnstiles)
         {
             gate.LockGate();
+            gate.isCorrectGate = false; // Makes sure nobody is the winner yet
         }
 
         // 2. Pick a random number between 0 and the total number of gates
@@ -26,8 +27,9 @@ public class TurnstileManager : MonoBehaviour
         {
             int randomIndex = Random.Range(0, allTurnstiles.Length);
             
-            // 3. Unlock ONLY the randomly chosen gate (turns it to Green Arrow)
+            // 3. Unlock ONLY the randomly chosen gate AND give it the winning ticket
             allTurnstiles[randomIndex].UnlockGate();
+            allTurnstiles[randomIndex].isCorrectGate = true; 
         }
     }
 }
