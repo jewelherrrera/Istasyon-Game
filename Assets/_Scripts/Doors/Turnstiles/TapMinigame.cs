@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using Istasyon.Player; // <--- NEW: Tells the script where your Inventory System is!
 
 public class TapMinigame : MonoBehaviour
 {
@@ -14,6 +15,11 @@ public class TapMinigame : MonoBehaviour
     [Tooltip("Drag your player movement script here to freeze them during the minigame!")]
     public MonoBehaviour playerMovementScript; 
 
+    [Header("Camera Tweaks")]
+    [Tooltip("X=Left/Right, Y=Up/Down, Z=Forward/Back")]
+    public Vector3 cameraOffset = new Vector3(0f, 1.2f, 0.4f); // 0.4 pushes it forward to see the slanted pad!
+    public float cameraTilt = 55f; // 90 is straight down, 55 is slanted to match the front of the machine!
+
     [Header("Rhythm Elements")]
     public RectTransform targetRing;
     public RectTransform shrinkingRing;
@@ -22,7 +28,10 @@ public class TapMinigame : MonoBehaviour
     public float shrinkSpeed = 1.5f;
     public float perfectHitMargin = 0.2f;
     public AudioSource loudAlarmSound;
-    public GameObject playerCardModel; 
+    
+    [Header("Inventory Hook")]
+    [Tooltip("Drag the CardItemData here so it knows what to delete from inventory!")]
+    public ItemData requiredBeepCard; 
     
     private TurnstileGate myGate;
     private bool isPlaying = false;
@@ -40,19 +49,17 @@ public class TapMinigame : MonoBehaviour
     {
         if (isPenaltyActive) return; 
 
-        // Snap the camera
-        scannerCamera.transform.position = transform.position + new Vector3(0, 1.2f, 0);
-        scannerCamera.transform.rotation = Quaternion.Euler(90, transform.eulerAngles.y, 0);
+        // CAMERA MATH REMOVED FROM HERE!
 
         mainPlayerCamera.gameObject.SetActive(false);
         scannerCamera.gameObject.SetActive(true);
         minigameCanvas.SetActive(true);
         
-        // --- NEW: Unlock the mouse so you can click! ---
+        // Unlock the mouse so you can click!
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // --- NEW: Freeze the player! ---
+        // Freeze the player!
         if (playerMovementScript != null) playerMovementScript.enabled = false;
 
         ResetRing();
@@ -66,17 +73,26 @@ public class TapMinigame : MonoBehaviour
         scannerCamera.gameObject.SetActive(false);
         mainPlayerCamera.gameObject.SetActive(true);
 
-        // --- NEW: Lock the mouse again for first-person! ---
+        // Lock the mouse again for first-person!
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        // --- NEW: Unfreeze the player! ---
+        // Unfreeze the player!
         if (playerMovementScript != null) playerMovementScript.enabled = true;
     }
 
     private void Update()
     {
         if (!isPlaying || isPenaltyActive) return;
+
+        // --- REAL-TIME CAMERA TWEAKS ---
+        // By putting this in Update, dragging the sliders in the Inspector updates the camera instantly!
+        scannerCamera.transform.position = transform.position 
+                                         + (transform.up * cameraOffset.y) 
+                                         + (transform.forward * cameraOffset.z) 
+                                         + (transform.right * cameraOffset.x);
+        
+        scannerCamera.transform.rotation = Quaternion.Euler(cameraTilt, transform.eulerAngles.y, 0);
 
         currentScale -= shrinkSpeed * Time.deltaTime;
         shrinkingRing.localScale = new Vector3(currentScale, currentScale, 1f);
@@ -104,7 +120,14 @@ public class TapMinigame : MonoBehaviour
             {
                 myGate.ShowTapSuccess(); 
                 myGate.UnlockGate(); 
-                if (playerCardModel != null) playerCardModel.SetActive(false); 
+                
+                // --- THE INVENTORY FIX ---
+                // This talks directly to your inventory and deletes the card!
+                if (requiredBeepCard != null && InventorySystem.Instance != null)
+                {
+                    InventorySystem.Instance.UseItem(requiredBeepCard.itemID);
+                }
+                
                 Invoke("ExitMinigame", 1f); 
             }
             else
