@@ -100,7 +100,7 @@ namespace Istasyon.PlayerControl
         {
             Move();
             HandleCrouch();
-            HandleStepClimb(); // <-- Calls the new stair mechanic!
+            HandleStepClimb(); 
         }
 
         private void Update()
@@ -244,7 +244,6 @@ namespace Istasyon.PlayerControl
             }
         }
 
-        // --- THE NEW STAIR CLIMBING LOGIC ---
         private void HandleStepClimb()
         {
             // Only try to climb stairs if we are actually pressing W/A/S/D
@@ -268,6 +267,14 @@ namespace Istasyon.PlayerControl
                     _playerRigidbody.position += new Vector3(0, stepSmooth, 0);
                 }
             }
+        }
+
+        // --- NEW: UI SLIDER FUNCTION ---
+        public void UpdateSensitivity(float newSensitivity)
+        {
+            MouseSensitivity = newSensitivity;
+            PlayerPrefs.SetFloat("MouseSensitivity", newSensitivity);
+            PlayerPrefs.Save();
         }
     }
 }
