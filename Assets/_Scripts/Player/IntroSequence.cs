@@ -20,6 +20,10 @@ public class IntroSequence : MonoBehaviour
     public float headTurnDuration = 2.5f; 
     public float lookAngle = 45f; 
 
+    // ---> NEW: The Train Transition Hook <---
+    [Header("Train Transition")]
+    public TrainDeparture trainToMove; 
+
     private Quaternion originalCamRotation;
     
     // --- THE NUCLEAR FIX VARIABLES ---
@@ -94,6 +98,12 @@ public class IntroSequence : MonoBehaviour
         Cursor.visible = false;
         
         isCinematicPlaying = false; // Release the camera lock so you can play!
+
+        // ---> NEW: Trigger the train departure! <---
+        if (trainToMove != null)
+        {
+            trainToMove.StartDeparture();
+        }
     }
 
     private IEnumerator SmoothLook(Quaternion targetRotation, float duration)

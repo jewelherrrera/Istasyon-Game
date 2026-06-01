@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using Istasyon.Player; // <--- NEW: Tells the script where your Inventory System is!
+using Istasyon.Player; 
 
 public class TapMinigame : MonoBehaviour
 {
@@ -16,9 +16,8 @@ public class TapMinigame : MonoBehaviour
     public MonoBehaviour playerMovementScript; 
 
     [Header("Camera Tweaks")]
-    [Tooltip("X=Left/Right, Y=Up/Down, Z=Forward/Back")]
-    public Vector3 cameraOffset = new Vector3(0f, 1.2f, 0.4f); // 0.4 pushes it forward to see the slanted pad!
-    public float cameraTilt = 55f; // 90 is straight down, 55 is slanted to match the front of the machine!
+    public Vector3 cameraOffset = new Vector3(0f, 1.2f, 0.4f); 
+    public float cameraTilt = 55f; 
 
     [Header("Rhythm Elements")]
     public RectTransform targetRing;
@@ -30,8 +29,12 @@ public class TapMinigame : MonoBehaviour
     public AudioSource loudAlarmSound;
     
     [Header("Inventory Hook")]
-    [Tooltip("Drag the CardItemData here so it knows what to delete from inventory!")]
     public ItemData requiredBeepCard; 
+    
+    // ---> NEW: The Train Hook <---
+    [Header("Train Event")]
+    [Tooltip("Drag the MRT Train object here so the minigame can call it back!")]
+    public TrainDeparture trainToCall;
     
     private TurnstileGate myGate;
     private bool isPlaying = false;
@@ -49,17 +52,13 @@ public class TapMinigame : MonoBehaviour
     {
         if (isPenaltyActive) return; 
 
-        // CAMERA MATH REMOVED FROM HERE!
-
         mainPlayerCamera.gameObject.SetActive(false);
         scannerCamera.gameObject.SetActive(true);
         minigameCanvas.SetActive(true);
         
-        // Unlock the mouse so you can click!
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // Freeze the player!
         if (playerMovementScript != null) playerMovementScript.enabled = false;
 
         ResetRing();
@@ -73,11 +72,9 @@ public class TapMinigame : MonoBehaviour
         scannerCamera.gameObject.SetActive(false);
         mainPlayerCamera.gameObject.SetActive(true);
 
-        // Lock the mouse again for first-person!
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        // Unfreeze the player!
         if (playerMovementScript != null) playerMovementScript.enabled = true;
     }
 
@@ -85,8 +82,6 @@ public class TapMinigame : MonoBehaviour
     {
         if (!isPlaying || isPenaltyActive) return;
 
-        // --- REAL-TIME CAMERA TWEAKS ---
-        // By putting this in Update, dragging the sliders in the Inspector updates the camera instantly!
         scannerCamera.transform.position = transform.position 
                                          + (transform.up * cameraOffset.y) 
                                          + (transform.forward * cameraOffset.z) 
@@ -121,8 +116,12 @@ public class TapMinigame : MonoBehaviour
                 myGate.ShowTapSuccess(); 
                 myGate.UnlockGate(); 
                 
-                // --- THE INVENTORY FIX ---
-                // This talks directly to your inventory and deletes the card!
+                // ---> NEW: Call the Train Back! <---
+                if (trainToCall != null)
+                {
+                    trainToCall.StartArrival();
+                }
+                
                 if (requiredBeepCard != null && InventorySystem.Instance != null)
                 {
                     InventorySystem.Instance.UseItem(requiredBeepCard.itemID);
