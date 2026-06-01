@@ -12,7 +12,7 @@ namespace Istasyon.Interaction
 
         [Header("Task Settings")]
         [Tooltip("What should the next objective be after picking this up?")]
-        [SerializeField] private string nextTaskText = ""; // <--- NEW!
+        [SerializeField] private string nextTaskText = ""; 
 
         [Header("Item Data")]
         [SerializeField] private ItemData keyItemData;
@@ -34,6 +34,11 @@ namespace Istasyon.Interaction
         [Header("Optional Effects")]
         [SerializeField] private float bobSpeed = 1.5f;
         [SerializeField] private float bobHeight = 0.1f;
+
+        // ---> NEW: The Jumpscare Hook <---
+        [Header("Optional Jumpscare")]
+        [Tooltip("Drop the Jumpscare_Director here if this key triggers the cat!")]
+        [SerializeField] private CatJumpscareDirector jumpscareDirector;
 
         private Transform player;
         private Vector3 startPos;
@@ -89,16 +94,23 @@ namespace Istasyon.Interaction
 
                 if (promptUI != null) promptUI.Hide(); 
 
-                // ---> UPDATED TRIGGER <---
-                // It only triggers if you actually typed something in the Inspector!
+                // Check for tasks
                 if (TaskManager.instance != null && !string.IsNullOrEmpty(nextTaskText))
                 {
                     TaskManager.instance.CompleteTask(nextTaskText);
                 }
 
+                // ---> NEW: Trigger the Cat Director if one is attached! <---
+                if (jumpscareDirector != null)
+                {
+                    jumpscareDirector.ExecuteJumpscare();
+                }
+
+                // Play the normal key pickup sound
                 if (audioSource != null && pickupSound != null)
                     audioSource.PlayOneShot(pickupSound);
 
+                // Destroy the key after the pickup sound finishes
                 Destroy(gameObject, pickupSound != null ? pickupSound.length : 0f);
             }
             else
