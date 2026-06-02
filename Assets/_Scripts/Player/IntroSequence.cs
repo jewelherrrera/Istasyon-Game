@@ -94,6 +94,12 @@ public class IntroSequence : MonoBehaviour
         if (taskUI != null) taskUI.SetActive(true);
         if (crosshairUI != null) crosshairUI.SetActive(true);
 
+        // ---> NEW: FADE OUT THE TAFT.MP3 AUDIO OVER 2 SECONDS! <---
+        if (SeamlessIntroAudio.instance != null)
+        {
+            SeamlessIntroAudio.instance.FadeOutAudio(2f); 
+        }
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         
